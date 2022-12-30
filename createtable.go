@@ -163,7 +163,6 @@ func (ctb *CreateTableBuilder) SQL(sql string) *CreateTableBuilder {
 }
 
 func (ctb *CreateTableBuilder) PrimaryKey() *CreateTableBuilder {
-	colName := ctb.table + "_id"
-
+	colName := strings.Split(ctb.table, ".")[1] + "id"
 	return ctb.Define(colName, "bigserial", "PRIMARY KEY", "NOT NULL")
 }
