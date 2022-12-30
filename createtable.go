@@ -161,3 +161,9 @@ func (ctb *CreateTableBuilder) SQL(sql string) *CreateTableBuilder {
 	ctb.injection.SQL(ctb.marker, sql)
 	return ctb
 }
+
+func (ctb *CreateTableBuilder) PrimaryKey() *CreateTableBuilder {
+	colName := ctb.table + "_id"
+
+	return ctb.Define(colName, "bigserial", "PRIMARY KEY", "NOT NULL")
+}
