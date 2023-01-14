@@ -5,6 +5,8 @@ package sqlbuilder
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/MatteoMiotello/go-sqlbuilder/types"
 	"strings"
 )
 
@@ -162,7 +164,46 @@ func (ctb *CreateTableBuilder) SQL(sql string) *CreateTableBuilder {
 	return ctb
 }
 
-func (ctb *CreateTableBuilder) PrimaryKey() *CreateTableBuilder {
-	colName := strings.Split(ctb.table, ".")[1] + "id"
-	return ctb.Define(colName, "bigserial", "PRIMARY KEY", "NOT NULL")
+func (ctb *CreateTableBuilder) PKColumn() *CreateTableBuilder {
+	colName := "id"
+	return ctb.Define(colName, types.Bigserial, "PRIMARY KEY", "NOT NULL")
+}
+
+func singleTableName(s string) string {
+	if strings.HasSuffix(s, "s") {
+		s = s[:len(s)-len("s")]
+	}
+
+	return s
+}
+
+func (ctb *CreateTableBuilder) FKColumn(completeTableName string, nullable bool) *CreateTableBuilder {
+	tableName := strings.Split(completeTableName, ".")[1]
+	tableName = singleTableName(tableName)
+
+	colName := tableName + "_id"
+	props := []string{
+		colName,
+		types.Bigserial,
+	}
+
+	if nullable == false {
+		props = append(props, "NOT NULL")
+	}
+
+	props = append(props, "REFERENCES", fmt.Sprintf("%s(id)", completeTableName))
+
+	return ctb.Define(props...)
+}
+
+func (ctb *CreateTableBuilder) CreatedColumn() *CreateTableBuilder {
+	return ctb.Define("created_at", types.Timestamptz, "NOT NULL", "DEFAULT NOW()")
+}
+
+func (ctb *CreateTableBuilder) UpdatedColumn() *CreateTableBuilder {
+	return ctb.Define("updated_at", types.Timestamptz, "NOT NULL", "DEFAULT NOW()")
+}
+
+func (ctb *CreateTableBuilder) DeletedColumn() *CreateTableBuilder {
+	return ctb.Define("deleted_at", types.Timestamptz, "NULL")
 }
