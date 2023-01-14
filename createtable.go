@@ -166,7 +166,7 @@ func (ctb *CreateTableBuilder) SQL(sql string) *CreateTableBuilder {
 
 func (ctb *CreateTableBuilder) PKColumn() *CreateTableBuilder {
 	colName := "id"
-	return ctb.Define(colName, types.Bigserial, "PRIMARY KEY", "NOT NULL")
+	return ctb.Define(colName, string(types.Bigserial), "PRIMARY KEY", "NOT NULL")
 }
 
 func singleTableName(s string) string {
@@ -184,7 +184,7 @@ func (ctb *CreateTableBuilder) FKColumn(completeTableName string, nullable bool)
 	colName := tableName + "_id"
 	props := []string{
 		colName,
-		types.Bigserial,
+		string(types.Bigserial),
 	}
 
 	if nullable == false {
@@ -197,13 +197,28 @@ func (ctb *CreateTableBuilder) FKColumn(completeTableName string, nullable bool)
 }
 
 func (ctb *CreateTableBuilder) CreatedColumn() *CreateTableBuilder {
-	return ctb.Define("created_at", types.Timestamptz, "NOT NULL", "DEFAULT NOW()")
+	return ctb.Define("created_at", string(types.Timestamptz), "NOT NULL", "DEFAULT NOW()")
 }
 
 func (ctb *CreateTableBuilder) UpdatedColumn() *CreateTableBuilder {
-	return ctb.Define("updated_at", types.Timestamptz, "NOT NULL", "DEFAULT NOW()")
+	return ctb.Define("updated_at", string(types.Timestamptz), "NOT NULL", "DEFAULT NOW()")
 }
 
 func (ctb *CreateTableBuilder) DeletedColumn() *CreateTableBuilder {
-	return ctb.Define("deleted_at", types.Timestamptz, "NULL")
+	return ctb.Define("deleted_at", string(types.Timestamptz), "NULL")
+}
+
+func (ctb *CreateTableBuilder) Column(colName string, colType types.ColType, nullable bool) *CreateTableBuilder {
+	props := []string{
+		colName,
+		string(colType),
+	}
+
+	if nullable {
+		props = append(props, "NULL")
+	} else {
+		props = append(props, "NOT NULL")
+	}
+
+	return ctb.Define(props...)
 }
