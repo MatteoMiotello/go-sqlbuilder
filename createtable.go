@@ -177,11 +177,10 @@ func singleTableName(s string) string {
 	return s
 }
 
-func (ctb *CreateTableBuilder) FKColumn(completeTableName string, nullable bool) *CreateTableBuilder {
+func (ctb *CreateTableBuilder) FKColumn(completeTableName string, colName string, nullable bool) *CreateTableBuilder {
 	tableName := strings.Split(completeTableName, ".")[1]
 	tableName = singleTableName(tableName)
 
-	colName := tableName + "_id"
 	props := []string{
 		colName,
 		string(types.Bigserial),
