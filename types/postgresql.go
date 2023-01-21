@@ -1,5 +1,10 @@
 package types
 
+import (
+	"fmt"
+	"strings"
+)
+
 type ColType string
 
 const (
@@ -47,3 +52,9 @@ const (
 	Uuid         ColType = "uuid"
 	Xml          ColType = "xml"
 )
+
+func (c ColType) Options(options ...string) ColType {
+	additional := strings.Join(options, ",")
+
+	return ColType(fmt.Sprintf("%s(%s)", c, additional))
+}
