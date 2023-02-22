@@ -186,7 +186,9 @@ func (ctb *CreateTableBuilder) FKColumn(completeTableName string, colName string
 		string(types.Bigserial),
 	}
 
-	if nullable == false {
+	if nullable {
+		props = append(props, "NULL")
+	} else {
 		props = append(props, "NOT NULL")
 	}
 
