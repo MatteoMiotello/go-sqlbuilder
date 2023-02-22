@@ -166,7 +166,7 @@ func (ctb *CreateTableBuilder) SQL(sql string) *CreateTableBuilder {
 
 func (ctb *CreateTableBuilder) PKColumn() *CreateTableBuilder {
 	colName := "id"
-	return ctb.Define(colName, string(types.Bigserial), "PRIMARY KEY", "NOT NULL")
+	return ctb.Define(colName, string(types.Bigserial), "PRIMARY KEY")
 }
 
 func singleTableName(s string) string {
