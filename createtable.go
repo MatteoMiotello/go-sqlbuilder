@@ -200,6 +200,7 @@ func singleTableName(s string) string {
 
 func (ctb *CreateTableBuilder) FKColumn(completeTableName string, colName string, nullable bool) *CreateTableBuilder {
 	tableName := strings.Split(completeTableName, ".")[1]
+	curTableName := singleTableName(strings.Split(ctb.table, ".")[1])
 	tableName = singleTableName(tableName)
 
 	props := []string{
@@ -216,7 +217,7 @@ func (ctb *CreateTableBuilder) FKColumn(completeTableName string, colName string
 	ctb.Define(props...)
 	return ctb.Finalizer(
 		fmt.Sprintf("ALTER TABLE %s ADD CONSTRAINT fk_%s FOREIGN KEY (%s) REFERENCES %s (id) ON UPDATE CASCADE", ctb.table, tableName, colName, completeTableName),
-		fmt.Sprintf("CREATE INDEX idx_%s_%s ON %s (%s)", ctb.table, colName, ctb.table, colName),
+		fmt.Sprintf("CREATE INDEX idx_%s_%s ON %s (%s)", curTableName, colName, ctb.table, colName),
 	)
 }
 
