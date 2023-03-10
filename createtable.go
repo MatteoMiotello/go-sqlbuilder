@@ -183,16 +183,19 @@ func (ctb *CreateTableBuilder) FKColumn(completeTableName string, colName string
 
 	props := []string{
 		colName,
-		string(types.Bigserial),
+		string(types.Bigint),
 	}
 
 	if nullable == false {
 		props = append(props, "NOT NULL")
+	} else {
+		props = append(props, "NULL")
 	}
 
-	props = append(props, "REFERENCES", fmt.Sprintf("%s(id)", completeTableName))
-
-	return ctb.Define(props...)
+	ctb.Define(props...)
+	option := fmt.Sprintf("; ALTER TABLE %s ADD CONSTRAINT fk_%s FOREIGN KEY (%s) REFERENCES %s (id) ON UPDATE CASCADE;", ctb.table, tableName, colName, completeTableName)
+	option += fmt.Sprintf(" CREATE INDEX idx_%s ON %s (%s)", colName, ctb.table, colName)
+	return ctb.Option(option)
 }
 
 func (ctb *CreateTableBuilder) CreatedColumn() *CreateTableBuilder {
