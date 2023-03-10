@@ -216,7 +216,7 @@ func (ctb *CreateTableBuilder) FKColumn(completeTableName string, colName string
 	ctb.Define(props...)
 	return ctb.Finalizer(
 		fmt.Sprintf("ALTER TABLE %s ADD CONSTRAINT fk_%s FOREIGN KEY (%s) REFERENCES %s (id) ON UPDATE CASCADE", ctb.table, tableName, colName, completeTableName),
-		fmt.Sprintf("CREATE INDEX idx_%s ON %s (%s)", colName, ctb.table, colName),
+		fmt.Sprintf("CREATE INDEX idx_%s_%s ON %s (%s)", ctb.table, colName, ctb.table, colName),
 	)
 }
 
