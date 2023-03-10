@@ -15,6 +15,7 @@ const (
 	createTableMarkerAfterCreate
 	createTableMarkerAfterDefine
 	createTableMarkerAfterOption
+	createTableMarkerAfterFinalize
 )
 
 // NewCreateTableBuilder creates a new CREATE TABLE builder.
@@ -39,6 +40,7 @@ type CreateTableBuilder struct {
 	table       string
 	defs        [][]string
 	options     [][]string
+	finalizers  [][]string
 
 	args *Args
 
@@ -85,6 +87,12 @@ func (ctb *CreateTableBuilder) Define(def ...string) *CreateTableBuilder {
 func (ctb *CreateTableBuilder) Option(opt ...string) *CreateTableBuilder {
 	ctb.options = append(ctb.options, opt)
 	ctb.marker = createTableMarkerAfterOption
+	return ctb
+}
+
+func (ctb *CreateTableBuilder) Finalizer(finalizer ...string) *CreateTableBuilder {
+	ctb.finalizers = append(ctb.finalizers, finalizer)
+	ctb.marker = createTableMarkerAfterFinalize
 	return ctb
 }
 
@@ -143,6 +151,19 @@ func (ctb *CreateTableBuilder) BuildWithFlavor(flavor Flavor, initialArg ...inte
 		ctb.injection.WriteTo(buf, createTableMarkerAfterOption)
 	}
 
+	if len(ctb.finalizers) > 0 {
+		buf.WriteString("; ")
+
+		finalizers := make([]string, 0, len(ctb.finalizers))
+
+		for _, fin := range ctb.finalizers {
+			finalizers = append(finalizers, strings.Join(fin, "; "))
+		}
+
+		buf.WriteString(strings.Join(finalizers, "; "))
+		ctb.injection.WriteTo(buf, createTableMarkerAfterFinalize)
+	}
+
 	return ctb.args.CompileWithFlavor(buf.String(), flavor, initialArg...)
 }
 
@@ -193,9 +214,10 @@ func (ctb *CreateTableBuilder) FKColumn(completeTableName string, colName string
 	}
 
 	ctb.Define(props...)
-	option := fmt.Sprintf("; ALTER TABLE %s ADD CONSTRAINT fk_%s FOREIGN KEY (%s) REFERENCES %s (id) ON UPDATE CASCADE;", ctb.table, tableName, colName, completeTableName)
-	option += fmt.Sprintf(" CREATE INDEX idx_%s ON %s (%s)", colName, ctb.table, colName)
-	return ctb.Option(option)
+	return ctb.Finalizer(
+		fmt.Sprintf("ALTER TABLE %s ADD CONSTRAINT fk_%s FOREIGN KEY (%s) REFERENCES %s (id) ON UPDATE CASCADE", ctb.table, tableName, colName, completeTableName),
+		fmt.Sprintf("CREATE INDEX idx_%s ON %s (%s)", colName, ctb.table, colName),
+	)
 }
 
 func (ctb *CreateTableBuilder) CreatedColumn() *CreateTableBuilder {
